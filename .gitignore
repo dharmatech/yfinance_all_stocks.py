@@ -4,3 +4,5 @@
 /pkl
 /__pycache__
 /analysis/__pycache__
+analysis/cross_above_200_day_sma_scan.py
+analysis/cross_above_200_day_sma_scanner_a.py
