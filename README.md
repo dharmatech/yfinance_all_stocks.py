@@ -11,6 +11,12 @@ However, this repository comes with a `symbols.txt` file to get you started.
 
     python -m yfinance_all_stocks
 
+### Run a scan
+
+    python -m analysis.golden_cross_50_200 2024-08-27
+
+![image](https://github.com/user-attachments/assets/a3684f6b-1215-4a16-aede-7447e83b791b)
+
 ### Dependencies
 
 https://github.com/dharmatech/yfinance_download.py
