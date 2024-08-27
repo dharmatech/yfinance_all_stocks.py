@@ -16,9 +16,6 @@ def cross_above_200_day_sma(df, date):
     if date not in df.index:
         return False
 
-    # a = df.loc[:date].iloc[-2]
-    # b = df.loc[date]
-
     a = df.loc[:date].iloc[-2]
     b = df.loc[:date].iloc[-1]
 

@@ -10,18 +10,20 @@ import datetime
 
 import analysis.utils
 # ----------------------------------------------------------------------
-def golden_cross_50_200(df, date):
-    
+
+# gain > 5% and volume > 5M
+
+def gain_vol(df, date):
+
     if date not in df.index:
         return False
     
-    df['200_SMA'] = ta.trend.sma_indicator(close=df['Close'], window=200)
-    df['50_SMA']  = ta.trend.sma_indicator(close=df['Close'], window=50)
-
     a = df.loc[:date].iloc[-2]
     b = df.loc[:date].iloc[-1]
 
-    return a['50_SMA'] < a['200_SMA'] and b['50_SMA'] > b['200_SMA']
+    gain = (b['Close'] - a['Close']) / a['Close']
+
+    return   gain > 0.05   and   b['Volume'] > 5_000_000
 # ----------------------------------------------------------------------
 pkl_files = [file for file in os.listdir('pkl') if file.endswith('.pkl')]
 # ----------------------------------------------------------------------
@@ -40,7 +42,7 @@ for pkl_file in pkl_files:
 
     df = pd.read_pickle(file_path)
         
-    if golden_cross_50_200(df, date):
+    if gain_vol(df, date):
         ls.append(pkl_file)
         print(pkl_file)
 # ----------------------------------------------------------------------
@@ -52,4 +54,10 @@ print(f'Items found: {len(ls)}')
 
 print(f'Elapsed time: {elapsed_time:.2f} seconds.')
 # ----------------------------------------------------------------------
-analysis.utils.write_list_to_file(ls, output_dir='out', file=f'golden_cross_50_200_{date}.txt')
+analysis.utils.write_list_to_file(ls, output_dir='out', file=f'gain_vol_{date}.txt')
+# ----------------------------------------------------------------------
+
+for item in ls:
+    item = item.replace('-1d.pkl', '')
+    item = f'${item}'
+    print(item)

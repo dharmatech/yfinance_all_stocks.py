@@ -10,18 +10,18 @@ import datetime
 
 import analysis.utils
 # ----------------------------------------------------------------------
-def golden_cross_50_200(df, date):
+def death_cross(df, date, x=50, y=200):
     
     if date not in df.index:
         return False
     
-    df['200_SMA'] = ta.trend.sma_indicator(close=df['Close'], window=200)
-    df['50_SMA']  = ta.trend.sma_indicator(close=df['Close'], window=50)
+    df[f'{y}_SMA'] = ta.trend.sma_indicator(close=df['Close'], window=y)
+    df[f'{x}_SMA'] = ta.trend.sma_indicator(close=df['Close'], window=x)
 
     a = df.loc[:date].iloc[-2]
     b = df.loc[:date].iloc[-1]
 
-    return a['50_SMA'] < a['200_SMA'] and b['50_SMA'] > b['200_SMA']
+    return a[f'{x}_SMA'] > a[f'{y}_SMA'] and b[f'{x}_SMA'] < b[f'{y}_SMA']
 # ----------------------------------------------------------------------
 pkl_files = [file for file in os.listdir('pkl') if file.endswith('.pkl')]
 # ----------------------------------------------------------------------
@@ -40,7 +40,7 @@ for pkl_file in pkl_files:
 
     df = pd.read_pickle(file_path)
         
-    if golden_cross_50_200(df, date):
+    if death_cross(df, date, x=50, y=200):
         ls.append(pkl_file)
         print(pkl_file)
 # ----------------------------------------------------------------------
@@ -52,4 +52,10 @@ print(f'Items found: {len(ls)}')
 
 print(f'Elapsed time: {elapsed_time:.2f} seconds.')
 # ----------------------------------------------------------------------
-analysis.utils.write_list_to_file(ls, output_dir='out', file=f'golden_cross_50_200_{date}.txt')
+analysis.utils.write_list_to_file(ls, output_dir='out', file=f'death_cross_50_200_{date}.txt')
+# ----------------------------------------------------------------------
+
+for item in ls:
+    item = item.replace('-1d.pkl', '')
+    item = f'${item}'
+    print(item)
