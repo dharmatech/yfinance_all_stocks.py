@@ -1,4 +1,6 @@
 
+Python library that downloads candle data for all actively traded stocks and runs technical analysis scans on them.
+
 ### Use thetadata to download all actively traded symbols
 
     python -m get_symbols_thetadata
@@ -20,3 +22,7 @@ However, this repository comes with a `symbols.txt` file to get you started.
 ### Dependencies
 
 https://github.com/dharmatech/yfinance_download.py
+
+### twitter thread
+
+https://x.com/dharmatrade/status/1826752944039182623
