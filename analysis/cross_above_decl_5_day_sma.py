@@ -1,5 +1,4 @@
 
-import sys
 import os
 import time
 import pandas as pd
@@ -7,28 +6,36 @@ import ta
 import ta.momentum
 import ta.trend
 import datetime
+import argparse
 
 import analysis.utils
 # ----------------------------------------------------------------------
-def death_cross(df, date, x=50, y=200):
+parser = argparse.ArgumentParser(description='stock scanner')
+parser.add_argument('--date', type=str, default=datetime.datetime.today().strftime('%Y-%m-%d'), help='The date to use for processing (default: today).')
+
+args = parser.parse_args()
+
+date = args.date
+# rsi  = args.rsi
+# ----------------------------------------------------------------------
+def cross_above_decl_sma(df, date):
     
     if date not in df.index:
         return False
     
-    df[f'{y}_SMA'] = ta.trend.sma_indicator(close=df['Close'], window=y)
-    df[f'{x}_SMA'] = ta.trend.sma_indicator(close=df['Close'], window=x)
+    df['5_SMA']  = ta.trend.sma_indicator(close=df['Close'], window=5)
 
-    a = df.loc[:date].iloc[-2]
-    b = df.loc[:date].iloc[-1]
+    a = df.loc[:date].iloc[-2] # yesterday
+    b = df.loc[:date].iloc[-1] # today
 
-    return a[f'{x}_SMA'] > a[f'{y}_SMA'] and b[f'{x}_SMA'] < b[f'{y}_SMA']
+    sma_declining = b['5_SMA'] < a['5_SMA']
+
+    yesterday_close_below_sma = a['Close'] < a['5_SMA']
+    today_close_above_sma     = b['Close'] > b['5_SMA']
+    
+    return sma_declining   and   yesterday_close_below_sma   and   today_close_above_sma
 # ----------------------------------------------------------------------
 pkl_files = [file for file in os.listdir('pkl') if file.endswith('.pkl')]
-# ----------------------------------------------------------------------
-if len(sys.argv) > 1:
-    date = sys.argv[1]
-else:
-    date = datetime.datetime.today().strftime('%Y-%m-%d')
 # ----------------------------------------------------------------------
 start_time = time.time()
 # ----------------------------------------------------------------------
@@ -40,7 +47,7 @@ for pkl_file in pkl_files:
 
     df = pd.read_pickle(file_path)
         
-    if death_cross(df, date, x=50, y=200):
+    if cross_above_decl_sma(df, date):
         ls.append(pkl_file)
         print(pkl_file)
 # ----------------------------------------------------------------------
@@ -52,10 +59,7 @@ print(f'Items found: {len(ls)}')
 
 print(f'Elapsed time: {elapsed_time:.2f} seconds.')
 # ----------------------------------------------------------------------
-analysis.utils.write_list_to_file(ls, output_dir='out', file=f'death_cross_50_200_{date}.txt')
+analysis.utils.write_list_to_file(ls, output_dir='out', file=f'cross_above_decl_sma_{date}.txt')
 # ----------------------------------------------------------------------
-
 for item in ls:
-    item = item.replace('-1d.pkl', '')
-    item = f'${item}'
-    print(item)
+    print(f'${item.replace('-1d.pkl', '')}')

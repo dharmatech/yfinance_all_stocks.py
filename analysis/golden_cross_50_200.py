@@ -28,7 +28,7 @@ pkl_files = [file for file in os.listdir('pkl') if file.endswith('.pkl')]
 if len(sys.argv) > 1:
     date = sys.argv[1]
 else:
-    date = datetime.today().strftime('%Y-%m-%d')
+    date = datetime.datetime.today().strftime('%Y-%m-%d')
 # ----------------------------------------------------------------------
 start_time = time.time()
 # ----------------------------------------------------------------------
@@ -53,3 +53,8 @@ print(f'Items found: {len(ls)}')
 print(f'Elapsed time: {elapsed_time:.2f} seconds.')
 # ----------------------------------------------------------------------
 analysis.utils.write_list_to_file(ls, output_dir='out', file=f'golden_cross_50_200_{date}.txt')
+# ----------------------------------------------------------------------
+for item in ls:
+    item = item.replace('-1d.pkl', '')
+    item = f'${item}'
+    print(item)
