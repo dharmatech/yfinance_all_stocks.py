@@ -7,3 +7,5 @@
 analysis/cross_above_200_day_sma_scan.py
 analysis/cross_above_200_day_sma_scanner_a.py
 symbols_.txt
+*.pkl
+* copy*.py
