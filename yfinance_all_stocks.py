@@ -1,13 +1,37 @@
 
 import time
+import argparse
 import yfinance_download
 # ----------------------------------------------------------------------
-with open('symbols.txt', 'r') as f:
+parser = argparse.ArgumentParser(description="Download stock data using yfinance.")
+
+parser.add_argument(
+    '--file',
+    type=str,
+    help="Path to a file containing stock symbols, one per line. Overrides the default 'symbols.txt'."
+)
+
+args = parser.parse_args()
+
+if args.file:
+    path = args.file
+else:
+    path = 'symbols.txt'
+
+# path = 'symbols-polygon-io.txt'
+# ----------------------------------------------------------------------
+# with open('symbols.txt', 'r') as f:
+#     roots_stock = f.read().splitlines()
+
+with open(path, 'r') as f:
     roots_stock = f.read().splitlines()
 # ----------------------------------------------------------------------
 start_time = time.time()
 
 i = 0
+
+# stock = roots_stock[0]
+# stock = roots_stock[1]
 
 for stock in roots_stock:
 
