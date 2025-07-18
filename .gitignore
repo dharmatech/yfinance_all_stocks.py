@@ -9,3 +9,5 @@ analysis/cross_above_200_day_sma_scanner_a.py
 symbols_.txt
 *.pkl
 * copy*.py
+polygon_io_tickers.csv
+polygon-io-tickers-display.ps1
