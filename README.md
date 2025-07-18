@@ -26,3 +26,7 @@ https://github.com/dharmatech/yfinance_download.py
 ### twitter thread
 
 https://x.com/dharmatrade/status/1826752944039182623
+
+pct_spx_components_rsi_above_75.py:
+
+https://x.com/dharmatrade/status/1882739177139425748
