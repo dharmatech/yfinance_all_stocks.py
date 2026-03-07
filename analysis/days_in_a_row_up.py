@@ -69,6 +69,91 @@ def rsi_days_since_this_high_last_only(df):
 
     else:
         df.iloc[i, df.columns.get_loc('rsi_days_since_this_high')] = 0
+# ----------------------------------------------------------------------
+
+
+
+
+# def days_in_a_row_up(df):
+
+#     # df['Close'].tail(20)
+
+#     tmp = df.copy()[['Close']]
+
+#     # tmp = df.copy()['Close']
+   
+#     # tmp.shift(1)
+
+#     tmp['Close_1'] = tmp['Close'].shift(1)
+
+#     tmp['diff'] = tmp['Close'] - tmp['Close_1']
+
+#     tmp.tail(20)
+
+
+#     # tmp['diff'] > 0
+
+#     # tmp[tmp['diff'] > 0]['sign'] = 'pos'
+
+#     tmp.loc[tmp['diff'] > 0, 'sign'] = 'pos'
+#     tmp.loc[tmp['diff'] < 0, 'sign'] = 'neg'
+#     tmp.loc[tmp['diff'] == 0, 'sign'] = 'zero'
+
+#     tmp['new_streak'] = tmp['sign'] != tmp['sign'].shift()
+
+#     tmp.tail(20)
+#     tmp.tail(30)
+
+    
+
+#     tmp['streak_id'] = tmp['new_streak'].cumsum()
+
+#     tmp['streak_count'] = tmp.groupby('streak_id').cumcount() + 1
+    
+
+
+
+
+def calculate_close_streak_column(df):
+
+    tmp = df.copy()[['Close']]
+    
+    tmp['Close_1'] = tmp['Close'].shift(1)
+
+    tmp['diff'] = tmp['Close'] - tmp['Close_1']
+
+    tmp.loc[tmp['diff'] > 0, 'sign'] = 'pos'
+    tmp.loc[tmp['diff'] < 0, 'sign'] = 'neg'
+    tmp.loc[tmp['diff'] == 0, 'sign'] = 'zero'
+
+    tmp['new_streak'] = tmp['sign'] != tmp['sign'].shift()
+
+    tmp['streak_id'] = tmp['new_streak'].cumsum()
+
+    tmp['streak_count'] = tmp.groupby('streak_id').cumcount() + 1
+
+    return tmp
+
+# alt = calculate_close_streak_column(df)
+
+
+
+
+
+
+
+
+
+# def days_in_a_row_up(df, column='Close'):
+
+#     df['days_in_a_row_up'] = 0
+
+#     for i in range(1, len(df)):
+#         if df[column].iloc[i] > df[column].iloc[i-1]:
+#             df.iloc[i, df.columns.get_loc('days_in_a_row_up')] = df.iloc[i-1]['days_in_a_row_up'] + 1
+#         else:
+#             df.iloc[i, df.columns.get_loc('days_in_a_row_up')] = 0
+
 
 # ----------------------------------------------------------------------
 pkl_files = [file for file in os.listdir('pkl') if file.endswith('.pkl')]

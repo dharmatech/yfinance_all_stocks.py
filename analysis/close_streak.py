@@ -18,58 +18,34 @@ parser.add_argument('--testing_count', type=int)
 
 args = parser.parse_args()
 
+# args.testing_count = 100
+
 # market_cap_min = 100
 
 market_cap_min = args.market_cap_min if args.market_cap_min is not None else 0
 # ----------------------------------------------------------------------
 
-def rsi_days_since_this_high(df):
+def calculate_close_streak_column(df):
 
-    df['rsi'] = ta.momentum.rsi(close=df['Close'], window=14)
-
-    df['rsi_days_since_this_high'] = -1
+    tmp = df.copy()[['Close']]
     
-    for i in range(len(df)-1, 0, -1):
-        
-        if df['rsi'].iloc[i] > df['rsi'].iloc[i-1]:
+    tmp['Close_1'] = tmp['Close'].shift(1)
 
-            for j in range(i-1, 0, -1):
+    tmp['diff'] = tmp['Close'] - tmp['Close_1']
 
-                if df['rsi'].iloc[j] >= df['rsi'].iloc[i]:
-                    
-                    df.iloc[i, df.columns.get_loc('rsi_days_since_this_high')] = i - j
+    tmp.loc[tmp['diff'] > 0, 'sign'] = 'pos'
+    tmp.loc[tmp['diff'] < 0, 'sign'] = 'neg'
+    tmp.loc[tmp['diff'] == 0, 'sign'] = 'zero'
 
-                    break
+    tmp['new_streak'] = tmp['sign'] != tmp['sign'].shift()
 
-        else:
-            df.iloc[i, df.columns.get_loc('rsi_days_since_this_high')] = 0
+    tmp['streak_id'] = tmp['new_streak'].cumsum()
 
-# ----------------------------------------------------------------------
-def rsi_days_since_this_high_last_only(df):
+    tmp['streak_count'] = tmp.groupby('streak_id').cumcount() + 1
 
-    df['rsi'] = ta.momentum.rsi(close=df['Close'], window=14)
+    tmp.tail(30)
 
-    df['rsi_days_since_this_high'] = -1
-
-    i = len(df)-1
-                
-    if df['rsi'].iloc[i] > df['rsi'].iloc[i-1]:
-
-        for j in range(i-1, 0, -1):
-
-            if df['rsi'].iloc[j] >= df['rsi'].iloc[i]:
-                
-                df.iloc[i, df.columns.get_loc('rsi_days_since_this_high')] = i - j
-
-                break
-
-            if j == 0:
-
-                df.iloc[i, df.columns.get_loc('rsi_days_since_this_high')] = 1000000
-
-    else:
-        df.iloc[i, df.columns.get_loc('rsi_days_since_this_high')] = 0
-
+    return tmp
 # ----------------------------------------------------------------------
 pkl_files = [file for file in os.listdir('pkl') if file.endswith('.pkl')]
 
@@ -78,6 +54,8 @@ pkl_files = [file for file in os.listdir('pkl') if file.endswith('.pkl')]
 start_time = time.time()
 # ----------------------------------------------------------------------
 ls = []
+
+# pkl_file = 'SVA-1d.pkl'
 
 for pkl_file in pkl_files:
 
@@ -88,13 +66,17 @@ for pkl_file in pkl_files:
     df = pd.read_pickle(file_path)
 
     # rsi_days_since_this_high(df)
-    rsi_days_since_this_high_last_only(df)
+    # rsi_days_since_this_high_last_only(df)
+
+    tmp = calculate_close_streak_column(df)
 
     ls.append(
         { 
             'file': pkl_file,
             'symbol': pkl_file.split('-')[0],
-            'rsi_days_since_this_high': df.iloc[-1]['rsi_days_since_this_high'] 
+            # 'rsi_days_since_this_high': df.iloc[-1]['rsi_days_since_this_high'] 
+            'close_streak_count': tmp['streak_count'].iloc[-1],
+            'close_streak_sign':  tmp['sign'].iloc[-1],
         })
 
     # For testing. Only process a few files.
@@ -143,7 +125,11 @@ tbl_c['market_cap_M'] = (tbl_c['marketCap'].astype('Int64') / 1000000).astype('I
 # pkl_files[0].split('-')[0]
 
 
-tbl_d = tbl_c[['symbol', 'rsi_days_since_this_high', 'market_cap_M']]
+# tbl_d = tbl_c[['symbol', 'rsi_days_since_this_high', 'market_cap_M']]
+
+tbl_d = tbl_c.drop(columns=['file', 'marketCap'])
+
+
 
 # print(tbl_d.sort_values(by='rsi_days_since_this_high').tail(50))
 
@@ -151,7 +137,13 @@ tbl_d = tbl_c[['symbol', 'rsi_days_since_this_high', 'market_cap_M']]
 
 tbl_e = tbl_d[tbl_d['market_cap_M'] >= market_cap_min]
 
-print(tbl_e.sort_values(by='rsi_days_since_this_high').tail(50).to_string(index=False))
+tbl_f = tbl_e.sort_values(by='close_streak_count')
+
+tbl_g = tbl_f[tbl_f['close_streak_sign'] != 'zero']
+
+# print(tbl_e.sort_values(by='rsi_days_since_this_high').tail(50).to_string(index=False))
+
+print(tbl_g.sort_values(by='close_streak_count').tail(50).to_string(index=False))
 
 
 

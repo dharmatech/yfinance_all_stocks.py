@@ -23,52 +23,52 @@ args = parser.parse_args()
 market_cap_min = args.market_cap_min if args.market_cap_min is not None else 0
 # ----------------------------------------------------------------------
 
-def rsi_days_since_this_high(df):
+# def rsi_days_since_this_high(df):
 
-    df['rsi'] = ta.momentum.rsi(close=df['Close'], window=14)
+#     df['rsi'] = ta.momentum.rsi(close=df['Close'], window=14)
 
-    df['rsi_days_since_this_high'] = -1
+#     df['rsi_days_since_this_high'] = -1
     
-    for i in range(len(df)-1, 0, -1):
+#     for i in range(len(df)-1, 0, -1):
         
-        if df['rsi'].iloc[i] > df['rsi'].iloc[i-1]:
+#         if df['rsi'].iloc[i] > df['rsi'].iloc[i-1]:
 
-            for j in range(i-1, 0, -1):
+#             for j in range(i-1, 0, -1):
 
-                if df['rsi'].iloc[j] >= df['rsi'].iloc[i]:
+#                 if df['rsi'].iloc[j] >= df['rsi'].iloc[i]:
                     
-                    df.iloc[i, df.columns.get_loc('rsi_days_since_this_high')] = i - j
+#                     df.iloc[i, df.columns.get_loc('rsi_days_since_this_high')] = i - j
 
-                    break
+#                     break
 
-        else:
-            df.iloc[i, df.columns.get_loc('rsi_days_since_this_high')] = 0
+#         else:
+#             df.iloc[i, df.columns.get_loc('rsi_days_since_this_high')] = 0
 
 # ----------------------------------------------------------------------
-def rsi_days_since_this_high_last_only(df):
+def rsi_days_since_this_low_last_only(df):
 
     df['rsi'] = ta.momentum.rsi(close=df['Close'], window=14)
 
-    df['rsi_days_since_this_high'] = -1
+    df['rsi_days_since_this_low'] = -1
 
     i = len(df)-1
                 
-    if df['rsi'].iloc[i] > df['rsi'].iloc[i-1]:
+    if df['rsi'].iloc[i] < df['rsi'].iloc[i-1]:
 
         for j in range(i-1, 0, -1):
 
-            if df['rsi'].iloc[j] >= df['rsi'].iloc[i]:
+            if df['rsi'].iloc[j] <= df['rsi'].iloc[i]:
                 
-                df.iloc[i, df.columns.get_loc('rsi_days_since_this_high')] = i - j
+                df.iloc[i, df.columns.get_loc('rsi_days_since_this_low')] = i - j
 
                 break
 
             if j == 0:
 
-                df.iloc[i, df.columns.get_loc('rsi_days_since_this_high')] = 1000000
+                df.iloc[i, df.columns.get_loc('rsi_days_since_this_low')] = 1000000
 
     else:
-        df.iloc[i, df.columns.get_loc('rsi_days_since_this_high')] = 0
+        df.iloc[i, df.columns.get_loc('rsi_days_since_this_low')] = 0
 
 # ----------------------------------------------------------------------
 pkl_files = [file for file in os.listdir('pkl') if file.endswith('.pkl')]
@@ -88,13 +88,13 @@ for pkl_file in pkl_files:
     df = pd.read_pickle(file_path)
 
     # rsi_days_since_this_high(df)
-    rsi_days_since_this_high_last_only(df)
+    rsi_days_since_this_low_last_only(df)
 
     ls.append(
         { 
             'file': pkl_file,
             'symbol': pkl_file.split('-')[0],
-            'rsi_days_since_this_high': df.iloc[-1]['rsi_days_since_this_high'] 
+            'rsi_days_since_this_low': df.iloc[-1]['rsi_days_since_this_low'] 
         })
 
     # For testing. Only process a few files.
@@ -143,7 +143,7 @@ tbl_c['market_cap_M'] = (tbl_c['marketCap'].astype('Int64') / 1000000).astype('I
 # pkl_files[0].split('-')[0]
 
 
-tbl_d = tbl_c[['symbol', 'rsi_days_since_this_high', 'market_cap_M']]
+tbl_d = tbl_c[['symbol', 'rsi_days_since_this_low', 'market_cap_M']]
 
 # print(tbl_d.sort_values(by='rsi_days_since_this_high').tail(50))
 
@@ -151,7 +151,7 @@ tbl_d = tbl_c[['symbol', 'rsi_days_since_this_high', 'market_cap_M']]
 
 tbl_e = tbl_d[tbl_d['market_cap_M'] >= market_cap_min]
 
-print(tbl_e.sort_values(by='rsi_days_since_this_high').tail(50).to_string(index=False))
+print(tbl_e.sort_values(by='rsi_days_since_this_low').tail(50).to_string(index=False))
 
 
 
